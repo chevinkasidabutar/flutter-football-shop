@@ -1,123 +1,162 @@
-# Tugas 7
+## Tugas 7
 
-1. Jelaskan apa itu widget tree pada Flutter dan bagaimana hubungan parent-child (induk-anak) bekerja antar widget.
+### 1. Jelaskan apa itu widget tree pada Flutter dan bagaimana hubungan parent-child (induk-anak) bekerja antar widget.
 
-    Widget tree dalam Flutter adalah struktur hierarkis yang menggambarkan bagaimana widget-widget disusun dalam aplikasi. Ini mirip dengan pohon dimana setiap widget bisa memiliki widget anak (children) dan setiap widget (kecuali widget root) memiliki widget induk (parent).
+Widget tree dalam Flutter adalah struktur hierarkis yang menggambarkan bagaimana widget-widget disusun dalam aplikasi.  
+Ini mirip dengan pohon, di mana setiap widget bisa memiliki widget anak (children) dan setiap widget (kecuali root) memiliki widget induk (parent).
 
-    Hubungan parent-child bekerja dengan cara:
-    - Parent widget mengontrol posisi dan constraint layout untuk child widgets
-    - Properties dan behavior dari parent dapat mempengaruhi children
-    - State dan data dapat diwariskan dari parent ke child melalui constructors
-    - Children dapat mengakses data dan fungsi parent melalui BuildContext
+Hubungan parent-child bekerja dengan cara:
+- Parent widget mengontrol posisi dan layout untuk child widgets.
+- Properti dan perilaku parent bisa memengaruhi children.
+- Data dapat diwariskan dari parent ke child melalui constructor.
+- Child bisa mengakses data dan fungsi parent melalui `BuildContext`.
 
-2. Sebutkan semua widget yang kamu gunakan dalam proyek ini dan jelaskan fungsinya.
+---
 
-    1. **MaterialApp**
-    - Widget root yang menyediakan struktur dasar material design
-    - Mengatur tema, routing, dan lokalisasi aplikasi
+### 2. Sebutkan semua widget yang kamu gunakan dalam proyek ini dan jelaskan fungsinya.
 
-    2. **Scaffold**
-    - Menyediakan struktur layout dasar material design
-    - Mengatur AppBar, body, dan fitur material design lainnya
+1. **MaterialApp** – Widget root yang menyediakan struktur dasar Material Design dan mengatur tema aplikasi.  
+2. **Scaffold** – Memberikan struktur halaman dasar (AppBar, body, Drawer).  
+3. **AppBar** – Menampilkan judul aplikasi di bagian atas layar.  
+4. **Column & Row** – Menyusun widget secara vertikal dan horizontal.  
+5. **Container** – Memberikan padding, margin, dan dekorasi.  
+6. **Text** – Menampilkan teks statis dan dinamis.  
+7. **Card** – Menampilkan informasi dalam bentuk kartu.  
+8. **GridView** – Menampilkan daftar item dalam grid layout 3 kolom.  
+9. **Icon** – Menampilkan ikon dari library Material Icons.  
+10. **InkWell** – Menambahkan efek saat elemen ditekan.  
+11. **Material** – Menyediakan efek visual khas Material Design.  
 
-    3. **AppBar**
-    - Menampilkan bar aplikasi di bagian atas
-    - Berisi judul aplikasi "BolaBale Store"
+---
 
-    4. **Column & Row**
-    - Column: Menyusun widget secara vertikal
-    - Row: Menyusun widget secara horizontal
-    - Digunakan untuk layout InfoCard dan konten
+### 3. Apa fungsi dari widget MaterialApp? Mengapa digunakan sebagai widget root?
 
-    5. **Container**
-    - Memberikan padding dan styling
-    - Mengatur ukuran dan dekorasi widget
+**MaterialApp** digunakan sebagai root karena menyediakan konfigurasi dan komponen dasar Material Design.  
+Widget ini mengatur:
+- Tema global aplikasi
+- Routing dan navigasi
+- Lokalisasi dan behavior tombol back
 
-    6. **Text**
-    - Menampilkan teks seperti judul dan konten
-    - Mengatur style teks seperti warna dan ukuran font
+Tanpa `MaterialApp`, widget seperti `Scaffold` atau `AppBar` tidak akan berfungsi dengan benar.
 
-    7. **Card**
-    - Menampilkan informasi dalam bentuk kartu material design
-    - Digunakan dalam InfoCard untuk menampilkan NPM, Name, dan Class
+---
 
-    8. **GridView**
-    - Menampilkan children dalam grid layout
-    - Mengatur item produk dalam grid 3 kolom
+### 4. Jelaskan perbedaan antara StatelessWidget dan StatefulWidget. Kapan menggunakan masing-masing?
 
-    9. **Icon**
-    - Menampilkan ikon untuk setiap item
-    - Menggunakan Material Icons
+**StatelessWidget**
+- Tidak memiliki state internal.
+- Tidak berubah setelah dibuat (immutable).
+- Cocok untuk tampilan statis seperti `InfoCard` atau `ItemCard`.
 
-    10. **InkWell**
-        - Memberikan efek splash ketika ditekan
-        - Menangani interaksi tap pada item
+**StatefulWidget**
+- Memiliki state internal yang dapat berubah.
+- Rebuild setiap kali state berubah.
+- Cocok untuk tampilan interaktif seperti form input.
 
-    11. **Material**
-        - Memberikan efek visual material design
-        - Mengatur warna background items
+Gunakan:
+- `StatelessWidget` untuk UI statis.  
+- `StatefulWidget` untuk UI yang butuh update dinamis (misal form, animasi, timer).
 
+---
 
-3. Apa fungsi dari widget MaterialApp? Jelaskan mengapa widget ini sering digunakan sebagai widget root.
+### 5. Apa itu BuildContext dan mengapa penting di Flutter?
 
-    MaterialApp sering digunakan sebagai root widget karena:
-    1. Menyediakan konfigurasi dasar yang diperlukan untuk aplikasi Material Design
-    2. Mengatur tema global aplikasi (colors, typography, shapes)
-    3. Menangani navigasi dan routing
-    4. Menyediakan lokalisasi dan internationalization
-    5. Mengatur behavior dasar aplikasi seperti navigasi back button
-    6. Menjembatani aplikasi dengan sistem operasi
+`BuildContext` adalah objek yang merepresentasikan lokasi widget di dalam widget tree.  
+Fungsinya:
+- Mengakses data yang diwariskan dari parent widget.
+- Mengambil tema global (`Theme.of(context)`).
+- Menampilkan `SnackBar`, `Dialog`, atau navigasi ke halaman lain (`Navigator.of(context)`).
 
-4. Jelaskan perbedaan antara StatelessWidget dan StatefulWidget. Kapan kamu memilih salah satunya?
+---
 
-    ### StatelessWidget
-    - Widget yang tidak memiliki state internal
-    - Tidak dapat berubah setelah dibuat (immutable)
-    - Rebuild hanya terjadi jika ada perubahan di parent widget
-    - Cocok untuk UI yang statis atau bergantung sepenuhnya pada data external
-    - Contoh penggunaan: InfoCard, ItemCard di aplikasi ini
+### 6. Jelaskan konsep "hot reload" di Flutter dan bedanya dengan "hot restart".
 
-    ### StatefulWidget
-    - Widget yang memiliki state internal yang dapat berubah
-    - Dapat melakukan rebuild ketika state berubah
-    - Memiliki object State terpisah yang menyimpan data
-    - Cocok untuk UI yang interaktif atau perlu update berkala
-    - Contoh: Form input, animasi, atau countdown timer
+**Hot Reload**
+- Memperbarui kode tanpa kehilangan state aplikasi.
+- Cepat untuk perubahan UI.
+- Tidak me-reset state.
 
-    Pemilihan antara keduanya:
-    - Gunakan StatelessWidget jika UI bersifat statis atau hanya bergantung pada data yang diberikan
-    - Gunakan StatefulWidget jika UI perlu berubah secara dinamis atau menyimpan state internal
+**Hot Restart**
+- Menjalankan ulang seluruh aplikasi.
+- Me-reset semua state dan variabel.
+- Diperlukan saat mengubah inisialisasi state atau dependencies.
 
-5. Apa itu BuildContext dan mengapa penting di Flutter? Bagaimana penggunaannya di metode build?
+---
 
-    BuildContext adalah:
-    1. Handle ke lokasi widget dalam widget tree
-    2. Memberikan akses ke data yang diwariskan dari widget parent
-    3. Memungkinkan widget untuk berinteraksi dengan widget lain di tree
+## Tugas 8
 
-    Penggunaan dalam metode build:
-    - Mengakses Theme: `Theme.of(context)`
-    - Mengakses MediaQuery untuk responsive design: `MediaQuery.of(context)`
-    - Menampilkan dialog/snackbar: `ScaffoldMessenger.of(context)`
-    - Navigasi: `Navigator.of(context)`
+### 1. Jelaskan perbedaan antara `Navigator.push()` dan `Navigator.pushReplacement()` pada Flutter.  
+Dalam kasus apa sebaiknya masing-masing digunakan pada aplikasi *Football Shop* kamu?
 
-6. Jelaskan konsep "hot reload" di Flutter dan bagaimana bedanya dengan "hot restart".
+- **`Navigator.push()`**  
+  Menambahkan halaman baru di atas stack navigasi tanpa menghapus halaman sebelumnya.  
+  Pengguna bisa menekan tombol **back** untuk kembali.  
+  Cocok saat pengguna masih perlu kembali ke halaman asal.  
 
-    ### Hot Reload
-    - Memperbarui UI dengan cepat tanpa kehilangan state
-    - Hanya menginjeksi kode yang berubah
-    - State aplikasi tetap terjaga
-    - Cocok untuk experimental UI changes
-    - Tidak me-reset state variables
+  **Contoh:** Saat membuka detail produk dari halaman utama.
 
-    ### Hot Restart
-    - Memulai ulang aplikasi dari awal
-    - Me-reset semua state
-    - Mengompilasi ulang seluruh aplikasi
-    - Lebih lambat dari hot reload
-    - Diperlukan ketika mengubah state initialization atau dependencies
+- **`Navigator.pushReplacement()`**  
+  Mengganti halaman saat ini dengan halaman baru dan menghapus halaman lama dari stack.  
+  Pengguna tidak bisa kembali ke halaman sebelumnya.  
+  Cocok untuk navigasi yang sifatnya permanen.  
 
-    Kapan menggunakan masing-masing:
-    - Hot Reload: Untuk perubahan UI atau logic yang tidak mempengaruhi state
-    - Hot Restart: Ketika mengubah state initialization atau menambah dependencies baru
+  **Contoh:** Saat membuka halaman “Tambah Produk” dari Drawer atau card “Create Product”.
 
+**Kesimpulan:**
+- `Navigator.push()` → navigasi sementara.  
+- `Navigator.pushReplacement()` → navigasi permanen.
+
+---
+
+### 2. Bagaimana kamu memanfaatkan hierarchy widget seperti `Scaffold`, `AppBar`, dan `Drawer`?
+
+Ketiga widget ini digunakan untuk membuat struktur halaman yang konsisten di seluruh aplikasi.
+
+- **`Scaffold`**  
+  Memberikan layout dasar seperti AppBar, Drawer, dan body.
+
+- **`AppBar`**  
+  Menampilkan judul halaman agar pengguna tahu posisi mereka di aplikasi.
+
+- **`Drawer`**  
+  Berfungsi sebagai navigasi utama antar-halaman seperti “Halaman Utama” dan “Tambah Produk”.
+
+Dengan struktur ini:
+- Semua halaman terlihat seragam.
+- Navigasi mudah dan cepat.
+- Mengikuti prinsip *Material Design* untuk pengalaman pengguna yang baik.
+
+---
+
+### 3. Kelebihan menggunakan `Padding`, `SingleChildScrollView`, dan `ListView` dalam form.
+
+- **`Padding`**  
+  Memberikan jarak antar elemen agar tidak terlalu rapat.  
+  *Contoh:* Setiap `TextFormField` pada halaman form memiliki padding 16px.
+
+- **`SingleChildScrollView`**  
+  Membuat halaman bisa di-*scroll* jika kontennya panjang.  
+  *Contoh:* Digunakan di halaman *Tambah Produk Baru* agar tetap bisa digulir meskipun keyboard muncul.
+
+- **`ListView`**  
+  Menyusun daftar widget yang bisa di-*scroll*.  
+  *Contoh:* Digunakan pada Drawer untuk menampung daftar menu.
+
+Dengan ketiga widget ini, tampilan form menjadi responsif, mudah digunakan di layar kecil, dan tidak ada elemen yang tertutup keyboard.
+
+---
+
+### 4. Bagaimana kamu menyesuaikan warna tema agar aplikasi memiliki identitas visual yang konsisten?
+
+Aplikasi *BolaBale Store* menggunakan warna biru sebagai warna utama untuk menciptakan kesan profesional dan modern.  
+Tema ini diatur melalui `ThemeData(primarySwatch: Colors.blue)` dalam `MaterialApp`.
+
+**Contoh penerapan:**
+```dart
+return MaterialApp(
+  title: 'BolaBale Store',
+  theme: ThemeData(
+    primarySwatch: Colors.blue,
+  ),
+  home: MyHomePage(),
+);
