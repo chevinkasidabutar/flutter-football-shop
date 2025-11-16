@@ -1,5 +1,8 @@
+import 'package:bolabalestore/screens/login.dart';
+import 'package:bolabalestore/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'screens/menu.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const BolabaleStoreApp());
@@ -10,10 +13,16 @@ class BolabaleStoreApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Bolabale Store',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: MyHomePage(),
+    return Provider(
+      create: (_) {
+        CookieRequest request = CookieRequest();
+        return request;
+      },
+      child: MaterialApp(
+        title: 'BolaBale Store',
+        theme: AppTheme.lightTheme,
+        home: const LoginPage(),
+      ),
     );
   }
 }

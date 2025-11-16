@@ -1,8 +1,14 @@
+import 'dart:convert';
+import 'package:bolabalestore/theme/app_theme.dart';
+import 'package:bolabalestore/models/product.dart';
 import 'package:flutter/material.dart';
-import '../widgets/left_drawer.dart';
+import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 class ProductFormPage extends StatefulWidget {
-  const ProductFormPage({super.key});
+  final Product? product; // null untuk create, ada untuk edit
+
+  const ProductFormPage({super.key, this.product});
 
   @override
   State<ProductFormPage> createState() => _ProductFormPageState();
@@ -10,269 +16,393 @@ class ProductFormPage extends StatefulWidget {
 
 class _ProductFormPageState extends State<ProductFormPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _thumbnailController = TextEditingController();
+  final _categoryController = TextEditingController();
+  final _stockController = TextEditingController();
+  final _colorController = TextEditingController();
 
-  String _name = "";
-  int _price = 0;
-  String _description = "";
-  String? _thumbnail;
-  String _category = "";
   bool _isFeatured = false;
-  int _stock = 0;
-  String? _color;
-  String? _size; // 🔹 tambahkan variabel size
+  String? _size;
+  final List<String> _sizeOptions = ['', 'S', 'M', 'L', 'XL'];
+  bool _isEditMode = false;
 
-  final List<String> _sizeOptions = ['S', 'M', 'L', 'XL', 'tidak ada']; // 🔹 pilihan ukuran
+  @override
+  void initState() {
+    super.initState();
+    _isEditMode = widget.product != null;
+    if (_isEditMode && widget.product != null) {
+      // Prefill form dengan data product yang akan di-edit
+      final p = widget.product!;
+      _nameController.text = p.name;
+      _priceController.text = p.price.toString();
+      _descriptionController.text = p.description;
+      _thumbnailController.text = p.thumbnail;
+      _categoryController.text = p.category;
+      _stockController.text = p.stock.toString();
+      _colorController.text = p.color;
+      _isFeatured = p.isFeatured;
+      _size = p.size.isEmpty ? '' : p.size;
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _priceController.dispose();
+    _descriptionController.dispose();
+    _thumbnailController.dispose();
+    _categoryController.dispose();
+    _stockController.dispose();
+    _colorController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Tambah Produk Baru"),
-        backgroundColor: Colors.blue,
+        title: Text(_isEditMode ? "Edit Product" : "Create Product"),
       ),
-      drawer: const LeftDrawer(),
-      body: Form(
-        key: _formKey,
+      body: Container(
+        decoration: AppTheme.gradientBackground,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 🔹 NAMA PRODUK
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Nama Produk",
-                  hintText: "Masukkan nama produk",
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Nama produk tidak boleh kosong!";
-                  }
-                  if (value.length < 3) {
-                    return "Nama produk minimal 3 karakter!";
-                  }
-                  if (value.length > 100) {
-                    return "Nama produk maksimal 100 karakter!";
-                  }
-                  return null;
-                },
-                onSaved: (value) => _name = value!,
-              ),
-              const SizedBox(height: 16),
-
-              // 🔹 HARGA
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Harga (Rp)",
-                  hintText: "Masukkan harga produk",
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Harga tidak boleh kosong!";
-                  }
-                  final number = int.tryParse(value);
-                  if (number == null) {
-                    return "Harga harus berupa angka!";
-                  }
-                  if (number < 0) {
-                    return "Harga tidak boleh negatif!";
-                  }
-                  return null;
-                },
-                onSaved: (value) => _price = int.parse(value!),
-              ),
-              const SizedBox(height: 16),
-
-              // 🔹 STOK
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Stok Produk",
-                  hintText: "Masukkan jumlah stok produk",
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Stok tidak boleh kosong!";
-                  }
-                  final number = int.tryParse(value);
-                  if (number == null) {
-                    return "Stok harus berupa angka!";
-                  }
-                  if (number < 0) {
-                    return "Stok tidak boleh negatif!";
-                  }
-                  return null;
-                },
-                onSaved: (value) => _stock = int.parse(value!),
-              ),
-              const SizedBox(height: 16),
-
-              // 🔹 DESKRIPSI
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Deskripsi Produk",
-                  hintText: "Masukkan deskripsi produk",
-                ),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Deskripsi tidak boleh kosong!";
-                  }
-                  if (value.length < 10) {
-                    return "Deskripsi minimal 10 karakter!";
-                  }
-                  if (value.length > 500) {
-                    return "Deskripsi terlalu panjang (maks 500 karakter)!";
-                  }
-                  return null;
-                },
-                onSaved: (value) => _description = value!,
-              ),
-              const SizedBox(height: 16),
-
-              // 🔹 KATEGORI
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Kategori Produk",
-                  hintText: "Masukkan kategori produk",
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Kategori tidak boleh kosong!";
-                  }
-                  if (value.length > 50) {
-                    return "Kategori maksimal 50 karakter!";
-                  }
-                  return null;
-                },
-                onSaved: (value) => _category = value!,
-              ),
-              const SizedBox(height: 16),
-
-              // 🔹 THUMBNAIL
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "URL Thumbnail (opsional)",
-                  hintText: "Masukkan link gambar produk (http/https)",
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) return null; // boleh kosong
-                  final urlPattern =
-                      r'^(http|https):\/\/([\w\-]+(\.[\w\-]+)+)([\w\-,@?^=%&:/~+#]*[\w\-,@?^=%&/~+#])?$';
-                  if (!RegExp(urlPattern).hasMatch(value)) {
-                    return "Masukkan URL yang valid (http/https)!";
-                  }
-                  return null;
-                },
-                onSaved: (value) => _thumbnail = value,
-              ),
-              const SizedBox(height: 16),
-
-              // 🔹 WARNA
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Warna Produk (opsional)",
-                  hintText: "Masukkan warna produk",
-                ),
-                validator: (value) {
-                  if (value != null && value.length > 30) {
-                    return "Nama warna maksimal 30 karakter!";
-                  }
-                  return null;
-                },
-                onSaved: (value) => _color = value,
-              ),
-              const SizedBox(height: 16),
-
-              // 🔹 SIZE DROPDOWN
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: "Ukuran Produk",
-                ),
-                items: _sizeOptions
-                    .map((size) =>
-                        DropdownMenuItem(value: size, child: Text(size)))
-                    .toList(),
-                value: _size,
-                onChanged: (value) {
-                  setState(() {
-                    _size = value;
-                  });
-                },
-                validator: (value) =>
-                    value == null ? "Pilih ukuran produk!" : null,
-                onSaved: (value) => _size = value,
-              ),
-              const SizedBox(height: 16),
-
-              // 🔹 FEATURED SWITCH
-              SwitchListTile(
-                title: const Text("Produk Unggulan (Featured)"),
-                value: _isFeatured,
-                onChanged: (bool value) {
-                  setState(() {
-                    _isFeatured = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // 🔹 TOMBOL SAVE
-              Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 12),
-                  ),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text("Produk Berhasil Ditambahkan "),
-                          content: Text(
-                            "Nama: $_name\n"
-                            "Harga: $_price\n"
-                            "Deskripsi: $_description\n"
-                            "Kategori: $_category\n"
-                            "Thumbnail: ${_thumbnail ?? '-'}\n"
-                            "Warna: ${_color ?? '-'}\n"
-                            "Ukuran: ${_size ?? '-'}\n"
-                            "Stok: $_stock\n"
-                            "Featured: ${_isFeatured ? 'Ya' : 'Tidak'}",
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Tutup dialog
-                                setState(() {
-                                  // 🔹 Reset semua nilai variabel ke default
-                                  _formKey.currentState!.reset();
-                                  _isFeatured = false;
-                                  _size = null;
-                                });
-                              },
-                              child: const Text("OK"),
+          padding: const EdgeInsets.all(20.0),
+          child: Container(
+            decoration: AppTheme.glassCard,
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _isEditMode ? "Edit Product" : "Create Product",
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
                             ),
-                          ],
-                        ),
-                      );
-
-                    }
-                  },
-                  child: const Text(
-                    "Save",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _isEditMode ? "Update product information" : "Add new product",
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTheme.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
                   ),
-                ),
+                  const Divider(height: 32),
+
+                  // Name
+                  _buildFormField(
+                    label: "Name",
+                    child: TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        hintText: "Product name",
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Name is required";
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  // Price
+                  _buildFormField(
+                    label: "Price",
+                    child: TextFormField(
+                      controller: _priceController,
+                      decoration: const InputDecoration(
+                        hintText: "0",
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Price is required";
+                        }
+                        if (int.tryParse(value) == null) {
+                          return "Price must be a number";
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  // Description
+                  _buildFormField(
+                    label: "Description",
+                    child: TextFormField(
+                      controller: _descriptionController,
+                      decoration: const InputDecoration(
+                        hintText: "Write a short description...",
+                        border: OutlineInputBorder(),
+                        alignLabelWithHint: true,
+                      ),
+                      maxLines: 4,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Description is required";
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  // Thumbnail URL
+                  _buildFormField(
+                    label: "Thumbnail URL",
+                    child: TextFormField(
+                      controller: _thumbnailController,
+                      decoration: const InputDecoration(
+                        hintText: "https://example.com/image.jpg",
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.url,
+                    ),
+                  ),
+
+                  // Category
+                  _buildFormField(
+                    label: "Category",
+                    child: TextFormField(
+                      controller: _categoryController,
+                      decoration: const InputDecoration(
+                        hintText: "e.g. Jersey, Boots, Accessory",
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Category is required";
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  // Stock
+                  _buildFormField(
+                    label: "Stock",
+                    child: TextFormField(
+                      controller: _stockController,
+                      decoration: const InputDecoration(
+                        hintText: "0",
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Stock is required";
+                        }
+                        if (int.tryParse(value) == null) {
+                          return "Stock must be a number";
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  // Size & Color in Grid (seperti website)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildFormField(
+                          label: "Size",
+                          child: DropdownButtonFormField<String>(
+                            value: _size,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                            ),
+                            items: _sizeOptions.map((size) {
+                              return DropdownMenuItem(
+                                value: size,
+                                child: Text(size.isEmpty ? "(None)" : size),
+                              );
+                            }).toList(),
+                            onChanged: (value) => setState(() => _size = value ?? ''),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildFormField(
+                          label: "Color(s)",
+                          child: TextFormField(
+                            controller: _colorController,
+                            decoration: const InputDecoration(
+                              hintText: "e.g black, red or #000000, #ff0000",
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+                    child: Text(
+                      "Separate with comma/semicolon for multiple colors",
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Featured Checkbox
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _isFeatured,
+                        onChanged: (value) {
+                          setState(() {
+                            _isFeatured = value ?? false;
+                          });
+                        },
+                        activeColor: AppTheme.purple600,
+                      ),
+                      Text(
+                        "Featured",
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(color: AppTheme.textMuted),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            try {
+                              final data = {
+                                "name": _nameController.text.trim(),
+                                "price": int.parse(_priceController.text),
+                                "description": _descriptionController.text.trim(),
+                                "thumbnail": _thumbnailController.text.trim(),
+                                "category": _categoryController.text.trim(),
+                                "is_featured": _isFeatured.toString(),
+                                "stock": int.parse(_stockController.text),
+                                "color": _colorController.text.trim(),
+                                "size": _size ?? "",
+                              };
+
+                              Map<String, dynamic> response;
+                              if (_isEditMode) {
+                                // Edit mode - gunakan endpoint edit Flutter
+                                response = await request.postJson(
+                                  "http://localhost:8001/edit-flutter/${widget.product!.id}/",
+                                  jsonEncode(data),
+                                );
+                              } else {
+                                // Create mode
+                                response = await request.postJson(
+                                  "http://localhost:8001/create-flutter/",
+                                  jsonEncode(data),
+                                );
+                              }
+
+                              if (response['status'] == 'success' || response['status'] == 'updated') {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(_isEditMode
+                                          ? "Product successfully updated!"
+                                          : "Product successfully created!"),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                  Navigator.pop(context, true); // Return true untuk trigger refresh
+                                }
+                              } else {
+                                String message = response['message']?.toString() ?? "Failed to ${_isEditMode ? 'update' : 'create'} product";
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(message),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Error: ${e.toString()}"),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.purple600,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(_isEditMode ? "Save Changes" : "Publish Product"),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFormField({required String label, required Widget child}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          child,
+        ],
       ),
     );
   }
