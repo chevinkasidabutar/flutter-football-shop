@@ -152,14 +152,14 @@ Aplikasi *BolaBale Store* menggunakan warna biru sebagai warna utama untuk menci
 Tema ini diatur melalui `ThemeData(primarySwatch: Colors.blue)` dalam `MaterialApp`.
 
 **Contoh penerapan:**
-```dart
+
 return MaterialApp(
   title: 'BolaBale Store',
   theme: ThemeData(
     primarySwatch: Colors.blue,
   ),
   home: MyHomePage(),
-);
+); 
 
 ---
 
