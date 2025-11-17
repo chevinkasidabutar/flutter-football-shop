@@ -13,13 +13,11 @@ class BolabaleStoreApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Provider(
-      create: (_) {
-        CookieRequest request = CookieRequest();
-        return request;
-      },
+    return Provider<CookieRequest>(
+      create: (_) => CookieRequest(),
       child: MaterialApp(
         title: 'BolaBale Store',
+        debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         home: const LoginPage(),
       ),

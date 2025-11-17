@@ -1,8 +1,10 @@
-import 'package:bolabalestore/widgets/left_drawer.dart';
-import 'package:bolabalestore/theme/app_theme.dart';
-import 'package:flutter/material.dart';
-import 'package:bolabalestore/screens/products_entry_list.dart';
 import 'package:bolabalestore/screens/my_products_list.dart';
+import 'package:bolabalestore/screens/products_entry_list.dart';
+import 'package:bolabalestore/theme/app_theme.dart';
+import 'package:bolabalestore/widgets/left_drawer.dart';
+import 'package:flutter/material.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 import 'productslist_form.dart';
 
 class MyHomePage extends StatelessWidget {
@@ -20,6 +22,10 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+    final username = request.loggedIn
+        ? ((request.jsonData['username'] as String?) ?? 'Player')
+        : 'Guest';
     return Scaffold(
       appBar: AppBar(
         title: const Text('BolaBale Store'),
@@ -27,36 +33,42 @@ class MyHomePage extends StatelessWidget {
       drawer: const LeftDrawer(),
       body: Container(
         decoration: AppTheme.gradientBackground,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  InfoCard(title: 'NPM', content: npm),
-                  InfoCard(title: 'Name', content: nama),
-                  InfoCard(title: 'Class', content: kelas),
-                ],
-              ),
-              const SizedBox(height: 16.0),
-              Text(
-                'Selamat datang di BolaBale Store!',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppTheme.textPrimary,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 960),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _HeroSection(username: username),
+                    const SizedBox(height: 24),
+                    _InfoChips(npm: npm, nama: nama, kelas: kelas),
+                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final double itemWidth = constraints.maxWidth > 720 ? 260 : 220;
+                        return Wrap(
+                          spacing: 16,
+                          runSpacing: 16,
+                          alignment: WrapAlignment.center,
+                          children: items
+                              .map(
+                                (item) => SizedBox(
+                                  width: itemWidth,
+                                  child: ItemCard(item),
+                                ),
+                              )
+                              .toList(),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  children: items.map((item) => ItemCard(item)).toList(),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -64,34 +76,83 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
-class InfoCard extends StatelessWidget {
-  final String title;
-  final String content;
+class _HeroSection extends StatelessWidget {
+  final String username;
 
-  const InfoCard({super.key, required this.title, required this.content});
+  const _HeroSection({required this.username});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width / 3.5,
       decoration: AppTheme.glassCard,
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            'Welcome, $username!',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
           ),
-          const SizedBox(height: 8.0),
-          Text(
-            content,
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
+          const SizedBox(height: 6),
         ],
       ),
+    );
+  }
+}
+
+class _InfoChips extends StatelessWidget {
+  final String npm;
+  final String nama;
+  final String kelas;
+
+  const _InfoChips({
+    required this.npm,
+    required this.nama,
+    required this.kelas,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final chips = [
+      {'label': 'NPM', 'value': npm},
+      {'label': 'Name', 'value': nama},
+      {'label': 'Class', 'value': kelas},
+    ];
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: chips
+          .map(
+            (chip) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: AppTheme.glassCard,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    chip['label']!,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: AppTheme.textMuted,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    chip['value']!,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 }
